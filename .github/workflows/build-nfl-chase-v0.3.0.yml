@@ -1,12 +1,10 @@
 name: Build NFL Chase APK v0.3.0
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ "main" ]
-    paths:
-      - "NFLChase-v0.3.0-Game-Intelligence.zip"
-      - ".github/workflows/build-nfl-chase-v0.3.0.yml"
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,25 +20,24 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-- name: Configure Android SDK
-  run: |
-    echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
-    yes | sdkmanager --licenses > /dev/null || true
-    sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Install Android SDK 35
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Unzip NFL Chase source
         run: |
           rm -rf NFLChase
-          unzip -o NFLChase-v0.3.0-Game-Intelligence.zip
+          unzip -o NFLChase-v0.3.0-Game-Intelligence.zip -d NFLChase
 
       - name: Make Gradle wrapper executable
         run: chmod +x NFLChase/gradlew
 
       - name: Run unit tests
-        run: ./gradlew -p NFLChase testDebugUnitTest --stacktrace
+        run: ./gradlew -p NFLChase testDebugUnitTest
 
       - name: Build debug APK
-        run: ./gradlew -p NFLChase assembleDebug --stacktrace
+        run: ./gradlew -p NFLChase assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
