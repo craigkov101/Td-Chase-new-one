@@ -30,20 +30,56 @@ jobs:
       - name: Unzip NFL Chase source
         run: |
           rm -rf NFLChase
+          mkdir NFLChase
           unzip -o NFLChase-v0.3.0-Game-Intelligence.zip -d NFLChase
+          echo "ZIP contents:"
+          find NFLChase -maxdepth 3 -type f | head -100
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x NFLChase/gradlew
+      - name: Find Gradle project
+        run: |
+          GRADLEW=$(find NFLChase -type f -name gradlew | head -1)
+
+          if [ -z "$GRADLEW" ]; then
+            echo "ERROR: gradlew was not found anywhere in the ZIP."
+            echo "Files found:"
+            find NFLChase -maxdepth 4 -type f
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$GRADLEW")
+
+          echo "Found gradlew at: $GRADLEW"
+          echo "Project directory: $PROJECT_DIR"
+
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+          chmod +x "$GRADLEW"
 
       - name: Run unit tests
-        run: ./gradlew -p NFLChase testDebugUnitTest
+        run: |
+          cd "$PROJECT_DIR"
+          ./gradlew testDebugUnitTest --stacktrace
 
       - name: Build debug APK
-        run: ./gradlew -p NFLChase assembleDebug
+        run: |
+          cd "$PROJECT_DIR"
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Locate APK
+        run: |
+          APK=$(find "$PROJECT_DIR" -type f -name "*.apk" | head -1)
+
+          if [ -z "$APK" ]; then
+            echo "ERROR: APK was not created."
+            exit 1
+          fi
+
+          echo "APK found at: $APK"
+          cp "$APK" NFLChase-v0.3.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: NFLChase-v0.3.0-APK
-          path: NFLChase/app/build/outputs/apk/debug/app-debug.apk
+          path: NFLChase-v0.3.0.apk
           if-no-files-found: error
