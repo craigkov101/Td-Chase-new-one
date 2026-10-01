@@ -1,4 +1,4 @@
-name: Build NFL Chase APK v0.5.1
+name: Build NFL Chase APK v0.5.2
 
 on:
   push:
@@ -27,13 +27,15 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Unzip NFL Chase v0.5.1
+      - name: Unzip NFL Chase v0.5.2
         run: |
           rm -rf NFLChaseBuild
           mkdir -p NFLChaseBuild
-          unzip -o NFLChase-v0.5.1-Data-Recovery.zip -d NFLChaseBuild
-          echo "NFL Chase source extracted successfully."
-          find NFLChaseBuild -maxdepth 4 -type f | head -100
+
+          unzip -o NFLChase-v0.5.2-Player-Data.zip -d NFLChaseBuild
+
+          echo "===== NFL CHASE v0.5.2 EXTRACTED ====="
+          find NFLChaseBuild -maxdepth 4 -type f | head -150
 
       - name: Find Android project
         shell: bash
@@ -42,6 +44,7 @@ jobs:
 
           if [ ! -s gradlew_location.txt ]; then
             echo "ERROR: Could not find gradlew."
+            echo "Files inside source ZIP:"
             find NFLChaseBuild -maxdepth 6 -type f
             exit 1
           fi
@@ -49,67 +52,17 @@ jobs:
           read -r GRADLEW < gradlew_location.txt
           PROJECT_DIR="${GRADLEW%/gradlew}"
 
-          echo "Gradle wrapper: $GRADLEW"
-          echo "Project directory: $PROJECT_DIR"
+          echo "Gradle wrapper:"
+          echo "$GRADLEW"
+
+          echo "Project directory:"
+          echo "$PROJECT_DIR"
 
           chmod +x "$GRADLEW"
+
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Verify NFL Chase project
         shell: bash
         run: |
-          echo "Building from:"
-          echo "$PROJECT_DIR"
-          ls -la "$PROJECT_DIR"
-
-          if [ ! -f "$PROJECT_DIR/settings.gradle.kts" ] && [ ! -f "$PROJECT_DIR/settings.gradle" ]; then
-            echo "ERROR: Gradle settings file is missing."
-            exit 1
-          fi
-
-          if [ ! -d "$PROJECT_DIR/app" ]; then
-            echo "ERROR: Android app directory is missing."
-            exit 1
-          fi
-
-      - name: Run unit tests
-        shell: bash
-        run: |
-          cd "$PROJECT_DIR"
-          ./gradlew testDebugUnitTest --stacktrace
-
-      - name: Build NFL Chase v0.5.1
-        shell: bash
-        run: |
-          cd "$PROJECT_DIR"
-          ./gradlew assembleDebug --stacktrace
-
-      - name: Find finished APK
-        shell: bash
-        run: |
-          find "$PROJECT_DIR" -type f -name "app-debug.apk" -print > apk_location.txt
-
-          if [ ! -s apk_location.txt ]; then
-            echo "ERROR: app-debug.apk was not created."
-            echo "Other APK files:"
-            find "$PROJECT_DIR" -type f -name "*.apk" -print
-            exit 1
-          fi
-
-          read -r APK < apk_location.txt
-
-          echo "APK found:"
-          echo "$APK"
-
-          cp "$APK" NFLChase-v0.5.1-Data-Recovery.apk
-
-          echo "Final APK:"
-          ls -lh NFLChase-v0.5.1-Data-Recovery.apk
-
-      - name: Upload NFL Chase v0.5.1 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NFLChase-v0.5.1-Data-Recovery-APK
-          path: NFLChase-v0.5.1-Data-Recovery.apk
-          if-no-files-found: error
-          retention-days: 14
+          echo "===== PROJECT
