@@ -1,4 +1,4 @@
-name: Build NFL Chase APK v0.5.0
+name: Build NFL Chase APK v0.5.1
 
 on:
   push:
@@ -27,86 +27,16 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Unzip NFL Chase v0.5.0
+      - name: Unzip NFL Chase v0.5.1
         run: |
           rm -rf NFLChaseBuild
           mkdir NFLChaseBuild
 
-          unzip -o NFLChase-v0.5.0-Adaptive.zip -d NFLChaseBuild
+          unzip -o NFLChase-v0.5.1-Data-Recovery.zip -d NFLChaseBuild
 
           echo "===== EXTRACTED FILES ====="
           find NFLChaseBuild -maxdepth 4 -type f | head -150
 
       - name: Find Android project
         run: |
-          GRADLEW=$(find NFLChaseBuild -type f -name gradlew | head -1)
-
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew was not found."
-            echo "Files found:"
-            find NFLChaseBuild -maxdepth 6 -type f
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$GRADLEW")
-
-          echo "Found Gradle wrapper:"
-          echo "$GRADLEW"
-
-          echo "Project directory:"
-          echo "$PROJECT_DIR"
-
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-
-          chmod +x "$GRADLEW"
-
-      - name: Verify project
-        run: |
-          echo "===== PROJECT DIRECTORY ====="
-          echo "$PROJECT_DIR"
-
-          echo "===== PROJECT FILES ====="
-          ls -la "$PROJECT_DIR"
-
-          echo "===== APP FILES ====="
-          find "$PROJECT_DIR/app" -maxdepth 3 -type f | head -100 || true
-
-      - name: Run unit tests
-        run: |
-          cd "$PROJECT_DIR"
-          ./gradlew testDebugUnitTest --stacktrace
-
-      - name: Build NFL Chase v0.5.0 APK
-        run: |
-          cd "$PROJECT_DIR"
-          ./gradlew assembleDebug --stacktrace
-
-      - name: Locate APK
-        run: |
-          APK=$(find "$PROJECT_DIR" \
-            -type f \
-            -path "*/app/build/outputs/apk/debug/app-debug.apk" \
-            | head -1)
-
-          if [ -z "$APK" ]; then
-            echo "ERROR: app-debug.apk was not found."
-            echo "Searching for any APK:"
-            find "$PROJECT_DIR" -type f -name "*.apk" -print
-            exit 1
-          fi
-
-          echo "APK found:"
-          echo "$APK"
-
-          cp "$APK" NFLChase-v0.5.0-Adaptive.apk
-
-          echo "Final APK:"
-          ls -lh NFLChase-v0.5.0-Adaptive.apk
-
-      - name: Upload NFL Chase v0.5.0 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NFLChase-v0.5.0-Adaptive-APK
-          path: NFLChase-v0.5.0-Adaptive.apk
-          if-no-files-found: error
-          retention-days: 14
+          GRADLEW=$(find NFLChaseBuild -type f -
