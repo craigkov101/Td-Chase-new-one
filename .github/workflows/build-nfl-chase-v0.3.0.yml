@@ -25,4 +25,68 @@ jobs:
 
       - name: Install Android SDK 35
         run: |
-          sdkmanager "platform-tools" "platforms;android-35" "
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Unzip NFL Chase v0.4.0
+        run: |
+          rm -rf NFLChaseBuild
+          mkdir NFLChaseBuild
+          unzip -o NFLChase-v0.4.0-Live-Data.zip -d NFLChaseBuild
+
+          echo "Extracted project:"
+          find NFLChaseBuild -maxdepth 3 -type f | head -100
+
+      - name: Find Android project
+        run: |
+          GRADLEW=$(find NFLChaseBuild -type f -name gradlew | head -1)
+
+          if [ -z "$GRADLEW" ]; then
+            echo "ERROR: gradlew was not found in the v0.4.0 ZIP."
+            echo "ZIP contents:"
+            find NFLChaseBuild -maxdepth 5 -type f
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$GRADLEW")
+
+          echo "Found Gradle wrapper: $GRADLEW"
+          echo "Android project: $PROJECT_DIR"
+
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+          chmod +x "$GRADLEW"
+
+      - name: Verify project
+        run: |
+          echo "Building project at: $PROJECT_DIR"
+          ls -la "$PROJECT_DIR"
+
+      - name: Run unit tests
+        run: |
+          cd "$PROJECT_DIR"
+          ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build NFL Chase v0.4.0 APK
+        run: |
+          cd "$PROJECT_DIR"
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Locate APK
+        run: |
+          APK=$(find "$PROJECT_DIR" -type f -path "*/build/outputs/apk/debug/*.apk" | head -1)
+
+          if [ -z "$APK" ]; then
+            echo "ERROR: APK was not created."
+            find "$PROJECT_DIR" -type f -name "*.apk"
+            exit 1
+          fi
+
+          echo "APK found: $APK"
+          cp "$APK" NFLChase-v0.4.0-Live-Data.apk
+
+      - name: Upload NFL Chase APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFLChase-v0.4.0-Live-Data-APK
+          path: NFLChase-v0.4.0-Live-Data.apk
+          if-no-files-found: error
