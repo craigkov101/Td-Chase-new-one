@@ -24,45 +24,40 @@ jobs:
         uses: android-actions/setup-android@v4
 
       - name: Install Android SDK 35
-        run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Unzip NFL Chase v0.5.2
         run: |
           rm -rf NFLChaseBuild
-          mkdir -p NFLChaseBuild
-
+          mkdir NFLChaseBuild
           unzip -o NFLChase-v0.5.2-Player-Data.zip -d NFLChaseBuild
 
-          echo "===== NFL CHASE v0.5.2 EXTRACTED ====="
-          find NFLChaseBuild -maxdepth 4 -type f | head -150
-
       - name: Find Android project
-        shell: bash
         run: |
           find NFLChaseBuild -type f -name gradlew -print > gradlew_location.txt
-
-          if [ ! -s gradlew_location.txt ]; then
-            echo "ERROR: Could not find gradlew."
-            echo "Files inside source ZIP:"
-            find NFLChaseBuild -maxdepth 6 -type f
-            exit 1
-          fi
-
           read -r GRADLEW < gradlew_location.txt
           PROJECT_DIR="${GRADLEW%/gradlew}"
-
-          echo "Gradle wrapper:"
-          echo "$GRADLEW"
-
-          echo "Project directory:"
-          echo "$PROJECT_DIR"
-
           chmod +x "$GRADLEW"
-
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Verify NFL Chase project
-        shell: bash
+      - name: Run unit tests
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build NFL Chase v0.5.2
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Copy APK
         run: |
-          echo "===== PROJECT
+          find "$PROJECT_DIR" -type f -name app-debug.apk -print > apk_location.txt
+          read -r APK < apk_location.txt
+          cp "$APK" NFLChase-v0.5.2-Player-Data.apk
+
+      - name: Upload NFL Chase v0.5.2 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFLChase-v0.5.2-Player-Data-APK
+          path: NFLChase-v0.5.2-Player-Data.apk
+          if-no-files-found: error
+          retention-days: 14
