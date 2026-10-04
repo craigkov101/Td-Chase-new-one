@@ -2,21 +2,11 @@ name: Build NFL Chase v0.6.0
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "NFLChase-v0.6.0-TD-Engine.zip"
-      - ".github/workflows/**"
-
-permissions:
-  contents: read
 
 jobs:
   build:
     name: Build TD Engine APK
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -25,15 +15,58 @@ jobs:
       - name: Set up Java 17
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Extract NFL Chase v0.6.0
-        shell: bash
+      - name: Extract NFL Chase
         run: |
-          set -e
+          unzip -q NFLChase-v0.6.0-TD-Engine.zip -d nflchase
+          echo "=== EXTRACTED FILES ==="
+          find nflchase -maxdepth 3 -type f | head -100
 
-          echo "Repository files:"
-          ls -la
+      - name: Find and build Android project
+        run: |
+          SETTINGS=$(find nflchase -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \) | head -1)
 
-         
+          if [ -z "$SETTINGS" ]; then
+            echo "ERROR: Android settings file not found"
+            find nflchase -type f
+            exit 1
+          fi
+
+          PROJECT=$(dirname "$SETTINGS")
+
+          echo "Android project: $PROJECT"
+
+          cd "$PROJECT"
+
+          if [ ! -f gradlew ]; then
+            echo "ERROR: gradlew not found"
+            ls -la
+            exit 1
+          fi
+
+          chmod +x gradlew
+          ./gradlew clean assembleDebug --stacktrace --no-daemon
+
+      - name: Collect APK
+        run: |
+          APK=$(find nflchase -type f -name "*.apk" | head -1)
+
+          if [ -z "$APK" ]; then
+            echo "ERROR: APK not found"
+            find nflchase -type f | grep build || true
+            exit 1
+          fi
+
+          mkdir -p release
+          cp "$APK" release/NFL-Chase-v0.6.0.apk
+
+          echo "=== APK READY ==="
+          ls -lh release/NFL-Chase-v0.6.0.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFL-Chase-v0.6.0
+          path: release/NFL-Chase-v0.6.0.apk
