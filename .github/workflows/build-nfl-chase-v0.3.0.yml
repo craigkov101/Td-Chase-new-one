@@ -23,7 +23,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
-          distribution: temurin
-          java-version:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Extract NFL Chase v0.6.0
+        shell: bash
+        run: |
+          set -e
+
+          echo "Repository files:"
+          ls -la
+
+         
