@@ -23,6 +23,58 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
-      - name: Extract NFL Chase
+      - name: Find and extract v0.9.0
         run: |
-          unzip -q NFLChase-v0.9.0-Matchup-Explainer
+          ZIP=$(find . -maxdepth 3 -type f -iname "*v0.9.0*.zip" | head -1)
+
+          if [ -z "$ZIP" ]; then
+            echo "ERROR: v0.9.0 ZIP not found"
+            echo "ZIP files currently in repository:"
+            find . -maxdepth 3 -type f -iname "*.zip"
+            exit 1
+          fi
+
+          echo "Found ZIP: $ZIP"
+
+          mkdir -p nflchase
+          unzip -q "$ZIP" -d nflchase
+
+      - name: Build Android APK
+        run: |
+          SETTINGS=$(find nflchase -type f -name "settings.gradle.kts" | head -1)
+
+          if [ -z "$SETTINGS" ]; then
+            echo "ERROR: settings.gradle.kts not found"
+            find nflchase -type f
+            exit 1
+          fi
+
+          PROJECT=$(dirname "$SETTINGS")
+
+          echo "Building project at: $PROJECT"
+
+          cd "$PROJECT"
+          gradle clean assembleDebug --no-daemon --stacktrace
+
+      - name: Collect APK
+        run: |
+          APK=$(find nflchase -type f -path "*/build/outputs/apk/debug/*.apk" | head -1)
+
+          if [ -z "$APK" ]; then
+            echo "ERROR: APK not found"
+            exit 1
+          fi
+
+          mkdir -p release
+          cp "$APK" release/NFL-Chase-v0.9.0.apk
+
+          echo "NFL Chase v0.9.0 APK READY"
+          ls -lh release/NFL-Chase-v0.9.0.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFL-Chase-v0.9.0-Matchup-Explainer
+          path: release/NFL-Chase-v0.9.0.apk
+          if-no-files-found: error
+          retention-days: 30
