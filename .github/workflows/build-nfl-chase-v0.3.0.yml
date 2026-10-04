@@ -1,11 +1,11 @@
-name: Build NFL Chase v1.0.0
+name: Build NFL Chase v1.1.0
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build NFL Chase v1.0.0 APK
+    name: Build Simulation Engine APK
     runs-on: ubuntu-24.04
 
     steps:
@@ -21,65 +21,4 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10.2'
-
-      - name: Find and extract v1.0.0
-        run: |
-          ZIP=$(find . -maxdepth 3 -type f -iname "*v1.0.0*.zip" | head -1)
-
-          if [ -z "$ZIP" ]; then
-            echo "ERROR: v1.0.0 ZIP not found"
-            echo "ZIP files currently in repository:"
-            find . -maxdepth 3 -type f -iname "*.zip"
-            exit 1
-          fi
-
-          echo "Found ZIP: $ZIP"
-
-          mkdir -p nflchase
-          unzip -q "$ZIP" -d nflchase
-
-      - name: Build Android APK
-        run: |
-          SETTINGS=$(find nflchase -type f -name "settings.gradle.kts" | head -1)
-
-          if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle.kts not found"
-            find nflchase -type f
-            exit 1
-          fi
-
-          PROJECT=$(dirname "$SETTINGS")
-
-          echo "Building project at: $PROJECT"
-
-          cd "$PROJECT"
-          gradle clean assembleDebug --no-daemon --stacktrace
-
-      - name: Collect APK
-        run: |
-          APK=$(find nflchase -type f -path "*/build/outputs/apk/debug/*.apk" | head -1)
-
-          if [ -z "$APK" ]; then
-            echo "ERROR: APK not found"
-            find nflchase -type f | grep -E "\.apk$|build/outputs" || true
-            exit 1
-          fi
-
-          mkdir -p release
-          cp "$APK" release/NFL-Chase-v1.0.0.apk
-
-          echo "================================"
-          echo "NFL CHASE v1.0.0 APK READY"
-          echo "HR-STYLE REDESIGN"
-          echo "================================"
-
-          ls -lh release/NFL-Chase-v1.0.0.apk
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NFL-Chase-v1.0.0-HR-Style
-          path: release/NFL-Chase-v1.0.0.apk
-          if-no-files-found: error
-          retention-days: 30
+          gradle-version: '8.10.
