@@ -1,4 +1,4 @@
-name: Build NFL Chase v1.4.0
+name: Build NFL Chase v1.5.0
 
 on:
   workflow_dispatch:
@@ -20,7 +20,7 @@ jobs:
           gradle-version: 8.10.2
 
       - name: Extract
-        run: unzip -q NFLChase-v1.4.0-Live-Refresh.zip -d nflchase
+        run: unzip -q NFLChase-v1.5.0-Live-Eligibility.zip -d nflchase
 
       - name: Build
         run: |
@@ -30,10 +30,10 @@ jobs:
       - name: Prepare APK
         run: |
           mkdir -p release
-          cp $(find nflchase -name app-debug.apk | head -1) release/NFL-Chase-v1.4.0.apk
+          cp $(find nflchase -name app-debug.apk | head -1) release/NFL-Chase-v1.5.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.4.0-Live-Refresh
-          path: release/NFL-Chase-v1.4.0.apk
+          name: NFL-Chase-v1.5.0-Live-Eligibility
+          path: release/NFL-Chase-v1.5.0.apk
