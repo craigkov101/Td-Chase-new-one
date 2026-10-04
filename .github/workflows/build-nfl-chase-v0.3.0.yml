@@ -1,11 +1,11 @@
-name: Build NFL Chase v0.8.0
+name: Build NFL Chase v0.9.0
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build Defensive Exploit APK
+    name: Build Matchup Explainer APK
     runs-on: ubuntu-24.04
 
     steps:
@@ -25,49 +25,4 @@ jobs:
 
       - name: Extract NFL Chase
         run: |
-          unzip -q NFLChase-v0.8.0-Defensive-Exploit.zip -d nflchase
-
-      - name: Find and build project
-        run: |
-          SETTINGS=$(find nflchase -type f -name "settings.gradle.kts" | head -1)
-
-          if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle.kts not found"
-            find nflchase -type f
-            exit 1
-          fi
-
-          PROJECT=$(dirname "$SETTINGS")
-
-          echo "Building project at: $PROJECT"
-
-          cd "$PROJECT"
-          gradle clean assembleDebug --no-daemon --stacktrace
-
-      - name: Collect APK
-        run: |
-          APK=$(find nflchase -type f -path "*/build/outputs/apk/debug/*.apk" | head -1)
-
-          if [ -z "$APK" ]; then
-            echo "ERROR: APK not found"
-            find nflchase -type f | grep -E "\.apk$|build/outputs" || true
-            exit 1
-          fi
-
-          mkdir -p release
-          cp "$APK" release/NFL-Chase-v0.8.0.apk
-
-          echo "================================"
-          echo "NFL CHASE v0.8.0 APK READY"
-          echo "DEFENSIVE EXPLOIT ENGINE"
-          echo "================================"
-
-          ls -lh release/NFL-Chase-v0.8.0.apk
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NFL-Chase-v0.8.0-Defensive-Exploit
-          path: release/NFL-Chase-v0.8.0.apk
-          if-no-files-found: error
-          retention-days: 30
+          unzip -q NFLChase-v0.9.0-Matchup-Explainer
