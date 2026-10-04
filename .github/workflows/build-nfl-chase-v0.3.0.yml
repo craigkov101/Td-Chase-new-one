@@ -18,36 +18,33 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
       - name: Extract NFL Chase
         run: |
           unzip -q NFLChase-v0.6.0-TD-Engine.zip -d nflchase
-          echo "=== EXTRACTED FILES ==="
-          find nflchase -maxdepth 3 -type f | head -100
+          echo "NFL Chase extracted"
 
-      - name: Find and build Android project
+      - name: Build Android APK
         run: |
-          SETTINGS=$(find nflchase -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \) | head -1)
+          SETTINGS=$(find nflchase -type f -name "settings.gradle.kts" | head -1)
 
           if [ -z "$SETTINGS" ]; then
-            echo "ERROR: Android settings file not found"
-            find nflchase -type f
+            echo "ERROR: settings.gradle.kts not found"
             exit 1
           fi
 
           PROJECT=$(dirname "$SETTINGS")
 
-          echo "Android project: $PROJECT"
+          echo "Building project at:"
+          echo "$PROJECT"
 
           cd "$PROJECT"
 
-          if [ ! -f gradlew ]; then
-            echo "ERROR: gradlew not found"
-            ls -la
-            exit 1
-          fi
-
-          chmod +x gradlew
-          ./gradlew clean assembleDebug --stacktrace --no-daemon
+          gradle clean assembleDebug --stacktrace --no-daemon
 
       - name: Collect APK
         run: |
@@ -55,14 +52,14 @@ jobs:
 
           if [ -z "$APK" ]; then
             echo "ERROR: APK not found"
-            find nflchase -type f | grep build || true
             exit 1
           fi
 
           mkdir -p release
+
           cp "$APK" release/NFL-Chase-v0.6.0.apk
 
-          echo "=== APK READY ==="
+          echo "APK READY:"
           ls -lh release/NFL-Chase-v0.6.0.apk
 
       - name: Upload APK
@@ -70,3 +67,4 @@ jobs:
         with:
           name: NFL-Chase-v0.6.0
           path: release/NFL-Chase-v0.6.0.apk
+          if-no-files-found: error
