@@ -1,14 +1,22 @@
-name: Build NFL Chase APK v0.5.2
+name: Build NFL Chase v0.6.0
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  workflow_dispatch:
+    paths:
+      - "NFLChase-v0.6.0-TD-Engine.zip"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build TD Engine APK
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -18,46 +26,4 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
-
-      - name: Install Android SDK 35
-        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Unzip NFL Chase v0.5.2
-        run: |
-          rm -rf NFLChaseBuild
-          mkdir NFLChaseBuild
-          unzip -o NFLChase-v0.5.2-Player-Data.zip -d NFLChaseBuild
-
-      - name: Find Android project
-        run: |
-          find NFLChaseBuild -type f -name gradlew -print > gradlew_location.txt
-          read -r GRADLEW < gradlew_location.txt
-          PROJECT_DIR="${GRADLEW%/gradlew}"
-          chmod +x "$GRADLEW"
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-
-      - name: Run unit tests
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: ./gradlew testDebugUnitTest --stacktrace
-
-      - name: Build NFL Chase v0.5.2
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Copy APK
-        run: |
-          find "$PROJECT_DIR" -type f -name app-debug.apk -print > apk_location.txt
-          read -r APK < apk_location.txt
-          cp "$APK" NFLChase-v0.5.2-Player-Data.apk
-
-      - name: Upload NFL Chase v0.5.2 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NFLChase-v0.5.2-Player-Data-APK
-          path: NFLChase-v0.5.2-Player-Data.apk
-          if-no-files-found: error
-          retention-days: 14
+          java-version:
