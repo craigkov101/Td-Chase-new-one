@@ -8,24 +8,31 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10.2'
+          gradle-version: 8.10.2
 
       - name: Extract
+        run: unzip -q NFLChase-v1.1.0-Simulation-Engine.zip -d nflchase
+
+      - name: Build
+        working-directory: nflchase/NFLChase-v1.1.0-Simulation-Engine
+        run: gradle clean assembleDebug --no-daemon
+
+      - name: Prepare APK
         run: |
-          ZIP=$(find . -type f -iname "*v1.1.0*.zip" | head -1)
-          test -n "$ZIP" || exit 1
-          echo "Using $ZIP"
-          mkdir -p nflchase
-          unzip -q "$ZIP
+          mkdir -p release
+          cp nflchase/NFLChase-v1.1.0-Simulation-Engine/app/build/outputs/apk/debug/app-debug.apk release/NFL-Chase-v1.1.0.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFL-Chase-v1.1.0-Simulation-Engine
+          path: release/NFL-Chase-v1.1.0.apk
