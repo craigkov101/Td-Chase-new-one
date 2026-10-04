@@ -1,11 +1,11 @@
-name: Build NFL Chase v0.7.0
+name: Build NFL Chase v0.8.0
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build Game Day APK
+    name: Build Defensive Exploit APK
     runs-on: ubuntu-24.04
 
     steps:
@@ -25,7 +25,7 @@ jobs:
 
       - name: Extract NFL Chase
         run: |
-          unzip -q NFLChase-v0.7.0-Game-Day.zip -d nflchase
+          unzip -q NFLChase-v0.8.0-Defensive-Exploit.zip -d nflchase
 
       - name: Find and build project
         run: |
@@ -50,19 +50,24 @@ jobs:
 
           if [ -z "$APK" ]; then
             echo "ERROR: APK not found"
+            find nflchase -type f | grep -E "\.apk$|build/outputs" || true
             exit 1
           fi
 
           mkdir -p release
-          cp "$APK" release/NFL-Chase-v0.7.0.apk
+          cp "$APK" release/NFL-Chase-v0.8.0.apk
 
-          echo "NFL Chase v0.7.0 APK ready"
-          ls -lh release/NFL-Chase-v0.7.0.apk
+          echo "================================"
+          echo "NFL CHASE v0.8.0 APK READY"
+          echo "DEFENSIVE EXPLOIT ENGINE"
+          echo "================================"
+
+          ls -lh release/NFL-Chase-v0.8.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v0.7.0-Game-Day
-          path: release/NFL-Chase-v0.7.0.apk
+          name: NFL-Chase-v0.8.0-Defensive-Exploit
+          path: release/NFL-Chase-v0.8.0.apk
           if-no-files-found: error
           retention-days: 30
