@@ -1,4 +1,4 @@
-name: Build NFL Chase v1.1.0
+name: Build NFL Chase v1.3.0
 
 on:
   workflow_dispatch:
@@ -20,19 +20,19 @@ jobs:
           gradle-version: 8.10.2
 
       - name: Extract
-        run: unzip -q NFLChase-v1.1.0-Simulation-Engine.zip -d nflchase
+        run: unzip -q NFLChase-v1.3.0-Live-TD-Tracker.zip -d nflchase
 
       - name: Build
-        working-directory: nflchase/NFLChase-v1.1.0-Simulation-Engine
+        working-directory: nflchase/NFLChase-v1.3.0-Live-TD-Tracker
         run: gradle clean assembleDebug --no-daemon
 
       - name: Prepare APK
         run: |
           mkdir -p release
-          cp nflchase/NFLChase-v1.1.0-Simulation-Engine/app/build/outputs/apk/debug/app-debug.apk release/NFL-Chase-v1.1.0.apk
+          cp nflchase/NFLChase-v1.3.0-Live-TD-Tracker/app/build/outputs/apk/debug/app-debug.apk release/NFL-Chase-v1.3.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.1.0-Simulation-Engine
-          path: release/NFL-Chase-v1.1.0.apk
+          name: NFL-Chase-v1.3.0-Live-TD-Tracker
+          path: release/NFL-Chase-v1.3.0.apk
