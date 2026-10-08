@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.5.3
+name: Build NFL Chase v1.5.4
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
           gradle-version: 8.10.2
 
       - name: Extract
-        run: unzip -q NFLChase-v1.5.3-Tonight-Schedule.zip -d nflchase
+        run: unzip -q NFLChase-v1.5.4-Schedule-Fix.zip -d nflchase
 
       - name: Build
         run: |
@@ -31,10 +31,10 @@ jobs:
       - name: Prepare APK
         run: |
           mkdir -p release
-          cp "$(find nflchase -name app-debug.apk | head -1)" release/NFL-Chase-v1.5.3.apk
+          cp "$(find nflchase -name app-debug.apk | head -1)" release/NFL-Chase-v1.5.4.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.5.3-Tonight-Schedule
-          path: release/NFL-Chase-v1.5.3.apk
+          name: NFL-Chase-v1.5.4-Schedule-Fix
+          path: release/NFL-Chase-v1.5.4.apk
