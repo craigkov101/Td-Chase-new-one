@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.6.2
+name: Build NFL Chase v1.6.3
 
 on:
   workflow_dispatch:
@@ -11,25 +11,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.10.2
+          gradle-version: '8.10.2'
 
-      - name: Extract project
-        run: unzip -q NFLChase-v1.6.2-Schedule-Recovery.zip -d nflchase
+      - name: Extract source
+        run: unzip -q NFLChase-v1.6.3-Quality-Pass.zip -d project
 
-      - name: Build APK
+      - name: Compile debug APK
         run: |
-          cd "$(dirname "$(find nflchase -name settings.gradle.kts | head -1)")"
+          cd "$(dirname "$(find project -name settings.gradle.kts | head -1)")"
           gradle clean assembleDebug --no-daemon
 
-      - name: Upload APK
+      - name: Publish APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.6.2
-          path: nflchase/**/app/build/outputs/apk/debug/app-debug.apk
+          name: NFL-Chase-v1.6.3-APK
+          path: project/**/app/build/outputs/apk/debug/app-debug.apk
