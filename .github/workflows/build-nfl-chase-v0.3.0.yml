@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.6.6
+name: Build NFL Chase v1.6.7
 
 on:
   workflow_dispatch:
@@ -26,11 +26,10 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
-      - name: Extract NFL Chase v1.6.6
+      - name: Extract source
         run: |
-          test -f NFLChase-v1.6.6-Fresh-Manual.zip
           mkdir -p project
-          unzip -q NFLChase-v1.6.6-Fresh-Manual.zip -d project
+          unzip -q NFLChase-v1.6.7-Kotlin-Compile-Fix.zip -d project
 
       - name: Build Android APK
         run: |
@@ -44,11 +43,11 @@ jobs:
           mkdir -p release
           APK=$(find project -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/NFL-Chase-v1.6.6.apk
+          cp "$APK" release/NFL-Chase-v1.6.7.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.6.6
-          path: release/NFL-Chase-v1.6.6.apk
+          name: NFL-Chase-v1.6.7
+          path: release/NFL-Chase-v1.6.7.apk
           if-no-files-found: error
