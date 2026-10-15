@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.6.4
+name: Build NFL Chase v1.6.5
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - 'NFLChase-v1.6.4-Responsive-Feed.zip'
+      - 'NFLChase-v1.6.5-Week6-Slate.zip'
       - '.github/workflows/**'
 
 permissions:
@@ -18,60 +18,42 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
+      - name: Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
 
-      - name: Verify Android SDK
+      - name: Extract project
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls "$ANDROID_HOME/platforms"
-
-      - name: Extract NFL Chase source
-        run: |
-          test -f NFLChase-v1.6.4-Responsive-Feed.zip
           mkdir -p project
-          unzip -q NFLChase-v1.6.4-Responsive-Feed.zip -d project
-
-      - name: Find Android project
-        run: |
-          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
-          if [ ! -f "$PROJECT_DIR/settings.gradle.kts" ]; then
-            echo "Android project not found"
-            exit 1
-          fi
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          unzip -q NFLChase-v1.6.5-Week6-Slate.zip -d project
 
       - name: Build APK
         run: |
+          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
+          test -f "$PROJECT_DIR/settings.gradle.kts"
           cd "$PROJECT_DIR"
           gradle clean assembleDebug --no-daemon --stacktrace
 
       - name: Prepare APK
         run: |
           mkdir -p release
-          APK=$(find "$PROJECT_DIR" -name app-debug.apk -print -quit)
-
-          if [ -z "$APK" ]; then
-            echo "APK not found"
-            exit 1
-          fi
-
-          cp "$APK" release/NFL-Chase-v1.6.4.apk
+          APK=$(find project -name app-debug.apk -print -quit)
+          test -n "$APK"
+          cp "$APK" release/NFL-Chase-v1.6.5.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.6.4
-          path: release/NFL-Chase-v1.6.4.apk
+          name: NFL-Chase-v1.6.5
+          path: release/NFL-Chase-v1.6.5.apk
           if-no-files-found: error
