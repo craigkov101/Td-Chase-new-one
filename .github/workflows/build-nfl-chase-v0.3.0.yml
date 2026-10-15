@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.8.1
+name: Build TD Chase v1.8.2
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -21,20 +21,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle 8.10.2
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
 
-      - name: Extract project
+      - name: Extract TD Chase source
         run: |
+          test -f NFLChase-v1.8.2-Usage-Injury-Engine.zip
           mkdir -p project
-          unzip -q NFLChase-v1.8.1-Scoring-Data-Fix.zip -d project
+          unzip -q NFLChase-v1.8.2-Usage-Injury-Engine.zip -d project
 
-      - name: Check live ESPN scoring data
-        continue-on-error: true
+      - name: Verify live ESPN data
         run: |
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
+          test -f "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
           python3 "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
 
       - name: Run tests and build APK
@@ -49,11 +50,11 @@ jobs:
           mkdir -p release
           APK=$(find project -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/NFL-Chase-v1.8.1.apk
+          cp "$APK" release/TD-Chase-v1.8.2.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.8.1
-          path: release/NFL-Chase-v1.8.1.apk
+          name: TD-Chase-v1.8.2
+          path: release/TD-Chase-v1.8.2.apk
           if-no-files-found: error
