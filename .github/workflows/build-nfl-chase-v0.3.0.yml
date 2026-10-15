@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.6.8
+name: Build NFL Chase v1.6.9
 
 on:
   workflow_dispatch:
@@ -12,24 +12,25 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Java 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
 
       - name: Extract source
         run: |
+          test -f NFLChase-v1.6.9-Material-Compile-Fix.zip
           mkdir -p project
-          unzip -q NFLChase-v1.6.8-Connected-Slate.zip -d project
+          unzip -q NFLChase-v1.6.9-Material-Compile-Fix.zip -d project
 
       - name: Build APK
         run: |
@@ -43,11 +44,11 @@ jobs:
           mkdir -p release
           APK=$(find project -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/NFL-Chase-v1.6.8.apk
+          cp "$APK" release/NFL-Chase-v1.6.9.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.6.8
-          path: release/NFL-Chase-v1.6.8.apk
+          name: NFL-Chase-v1.6.9
+          path: release/NFL-Chase-v1.6.9.apk
           if-no-files-found: error
