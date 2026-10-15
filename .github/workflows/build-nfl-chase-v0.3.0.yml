@@ -1,5 +1,5 @@
 
-name: Build TD Chase v1.8.2
+name: Build TD Chase v1.9.0
 
 on:
   workflow_dispatch:
@@ -21,24 +21,24 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
+      - name: Set up Gradle 8.10.2
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
 
-      - name: Extract TD Chase source
+      - name: Unpack TD Chase source
         run: |
-          test -f NFLChase-v1.8.2-Usage-Injury-Engine.zip
+          test -f NFLChase-v1.9.0-Simulated-Game-Scripts.zip
           mkdir -p project
-          unzip -q NFLChase-v1.8.2-Usage-Injury-Engine.zip -d project
+          unzip -q NFLChase-v1.9.0-Simulated-Game-Scripts.zip -d project
 
-      - name: Verify live ESPN data
+      - name: Preflight ESPN live usage and recent scores
         run: |
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           test -f "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
           python3 "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
 
-      - name: Run tests and build APK
+      - name: Run unit tests and build Android APK
         run: |
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           test -f "$PROJECT_DIR/settings.gradle.kts"
@@ -50,11 +50,11 @@ jobs:
           mkdir -p release
           APK=$(find project -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/TD-Chase-v1.8.2.apk
+          cp "$APK" release/TD-Chase-v1.9.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.8.2
-          path: release/TD-Chase-v1.8.2.apk
+          name: TD-Chase-v1.9.0
+          path: release/TD-Chase-v1.9.0.apk
           if-no-files-found: error
