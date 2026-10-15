@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.6.5
+name: Build NFL Chase v1.6.6
 
 on:
   workflow_dispatch:
@@ -26,50 +26,29 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
-      - name: Verify Android SDK
+      - name: Extract NFL Chase v1.6.6
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls "$ANDROID_HOME/platforms"
-
-      - name: Extract NFL Chase source
-        run: |
-          test -f NFLChase-v1.6.5-Week6-Slate.zip
+          test -f NFLChase-v1.6.6-Fresh-Manual.zip
           mkdir -p project
-          unzip -q NFLChase-v1.6.5-Week6-Slate.zip -d project
-
-      - name: Find Android project
-        run: |
-          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
-
-          if [ ! -f "$PROJECT_DIR/settings.gradle.kts" ]; then
-            echo "Android project not found!"
-            exit 1
-          fi
-
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          unzip -q NFLChase-v1.6.6-Fresh-Manual.zip -d project
 
       - name: Build Android APK
         run: |
+          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
+          test -f "$PROJECT_DIR/settings.gradle.kts"
           cd "$PROJECT_DIR"
           gradle clean assembleDebug --no-daemon --stacktrace
 
       - name: Prepare APK
         run: |
           mkdir -p release
-
           APK=$(find project -name app-debug.apk -print -quit)
-
-          if [ -z "$APK" ]; then
-            echo "APK not found!"
-            exit 1
-          fi
-
-          cp "$APK" release/NFL-Chase-v1.6.5.apk
+          test -n "$APK"
+          cp "$APK" release/NFL-Chase-v1.6.6.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.6.5
-          path: release/NFL-Chase-v1.6.5.apk
+          name: NFL-Chase-v1.6.6
+          path: release/NFL-Chase-v1.6.6.apk
           if-no-files-found: error
-          retention-days: 30
