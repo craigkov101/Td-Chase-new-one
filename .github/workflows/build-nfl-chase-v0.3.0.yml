@@ -1,5 +1,5 @@
 
-name: Build NFL Chase v1.6.9
+name: Build NFL Chase v1.7.0
 
 on:
   workflow_dispatch:
@@ -28,11 +28,11 @@ jobs:
 
       - name: Extract source
         run: |
-          test -f NFLChase-v1.6.9-Material-Compile-Fix.zip
+          test -f NFLChase-v1.7.0-Live-Roster-Candidates.zip
           mkdir -p project
-          unzip -q NFLChase-v1.6.9-Material-Compile-Fix.zip -d project
+          unzip -q NFLChase-v1.7.0-Live-Roster-Candidates.zip -d project
 
-      - name: Build APK
+      - name: Build Android APK
         run: |
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           test -f "$PROJECT_DIR/settings.gradle.kts"
@@ -44,11 +44,11 @@ jobs:
           mkdir -p release
           APK=$(find project -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/NFL-Chase-v1.6.9.apk
+          cp "$APK" release/NFL-Chase-v1.7.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NFL-Chase-v1.6.9
-          path: release/NFL-Chase-v1.6.9.apk
+          name: NFL-Chase-v1.7.0
+          path: release/NFL-Chase-v1.7.0.apk
           if-no-files-found: error
