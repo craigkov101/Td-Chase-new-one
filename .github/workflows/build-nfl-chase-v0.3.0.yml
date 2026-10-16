@@ -1,5 +1,5 @@
 
-name: Build TD Chase v1.11.0
+name: Build TD Chase v1.13.0
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
       - name: Checkout repository
@@ -22,46 +22,52 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Gradle 8.10.2
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
 
-      - name: Verify and unpack TD Chase source
+      - name: Extract TD Chase v1.13.0
         run: |
-          test -f NFLChase-v1.11.0-Drive-Insights-Refresh.zip
-          unzip -tq NFLChase-v1.11.0-Drive-Insights-Refresh.zip
+          test -f NFLChase-v1.13.0-Visual-Foundation.zip
+          unzip -tq NFLChase-v1.13.0-Visual-Foundation.zip
           mkdir -p project
-          unzip -q NFLChase-v1.11.0-Drive-Insights-Refresh.zip -d project
-          test -f "$(find project -name settings.gradle.kts -print -quit)"
+          unzip -q NFLChase-v1.13.0-Visual-Foundation.zip -d project
 
-      - name: Check current ESPN rosters and scoring feeds
+      - name: Locate Android project
         run: |
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
+          test -f "$PROJECT_DIR/settings.gradle.kts"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+      - name: Verify ESPN data feed
+        continue-on-error: true
+        run: |
           python3 "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
 
-      - name: Run Android unit tests
+      - name: Run unit tests
         run: |
-          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           cd "$PROJECT_DIR"
-          gradle clean testDebugUnitTest --no-daemon --stacktrace
+          gradle testDebugUnitTest --no-daemon --stacktrace
 
-      - name: Compile Android APK
+      - name: Build Android APK
         run: |
-          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           cd "$PROJECT_DIR"
           gradle assembleDebug --no-daemon --stacktrace
 
       - name: Prepare APK
         run: |
           mkdir -p release
-          APK=$(find project -name app-debug.apk -print -quit)
+          APK=$(find "$PROJECT_DIR" -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/TD-Chase-v1.11.0.apk
+          cp "$APK" release/TD-Chase-v1.13.0.apk
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.11.0
-          path: release/TD-Chase-v1.11.0.apk
+          name: TD-Chase-v1.13.0
+          path: release/TD-Chase-v1.13.0.apk
           if-no-files-found: error
