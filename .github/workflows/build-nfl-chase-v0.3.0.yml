@@ -1,5 +1,5 @@
 
-name: Build TD Chase v1.10.0
+name: Build TD Chase v1.11.0
 
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -26,35 +27,41 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
-      - name: Unpack TD Chase source
+      - name: Verify and unpack TD Chase source
         run: |
-          test -f NFLChase-v1.10.0-Coverage-Roster-Update.zip
+          test -f NFLChase-v1.11.0-Drive-Insights-Refresh.zip
+          unzip -tq NFLChase-v1.11.0-Drive-Insights-Refresh.zip
           mkdir -p project
-          unzip -q NFLChase-v1.10.0-Coverage-Roster-Update.zip -d project
+          unzip -q NFLChase-v1.11.0-Drive-Insights-Refresh.zip -d project
+          test -f "$(find project -name settings.gradle.kts -print -quit)"
 
-      - name: Check ESPN live rosters and game history
+      - name: Check current ESPN rosters and scoring feeds
         run: |
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
-          test -f "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
           python3 "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
 
-      - name: Run Android unit tests and build APK
+      - name: Run Android unit tests
         run: |
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
-          test -f "$PROJECT_DIR/settings.gradle.kts"
           cd "$PROJECT_DIR"
-          gradle clean testDebugUnitTest assembleDebug --no-daemon --stacktrace
+          gradle clean testDebugUnitTest --no-daemon --stacktrace
 
-      - name: Copy APK
+      - name: Compile Android APK
+        run: |
+          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
+          cd "$PROJECT_DIR"
+          gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Prepare APK
         run: |
           mkdir -p release
           APK=$(find project -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/TD-Chase-v1.10.0.apk
+          cp "$APK" release/TD-Chase-v1.11.0.apk
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.10.0
-          path: release/TD-Chase-v1.10.0.apk
+          name: TD-Chase-v1.11.0
+          path: release/TD-Chase-v1.11.0.apk
           if-no-files-found: error
