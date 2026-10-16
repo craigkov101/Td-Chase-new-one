@@ -28,27 +28,61 @@ jobs:
           gradle-version: '8.10.2'
 
       - name: Verify Android SDK
+        shell: bash
         run: |
-          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
-          sdkmanager --version
-          sdkmanager --install \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+
+          echo "Android SDK location: $SDK_ROOT"
+
+          test -d "$SDK_ROOT"
+
+          if [ ! -d "$SDK_ROOT/platforms/android-35" ] || \
+             [ ! -d "$SDK_ROOT/build-tools/35.0.0" ]; then
+
+            SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" \
+              -type f -name sdkmanager -print -quit)
+
+            test -n "$SDKMANAGER"
+
+            echo "Using SDK manager: $SDKMANAGER"
+
+            "$SDKMANAGER" \
+              --sdk_root="$SDK_ROOT" \
+              --install \
+              "platforms;android-35" \
+              "build-tools;35.0.0"
+          fi
+
+          test -d "$SDK_ROOT/platforms/android-35"
+          test -d "$SDK_ROOT/build-tools/35.0.0"
+
+          echo "Android SDK verified successfully"
 
       - name: Extract TD Chase source
         run: |
           test -f NFLChase-v1.13.0-Visual-Foundation.zip
+
           unzip -tq NFLChase-v1.13.0-Visual-Foundation.zip
+
           mkdir -p project
+
           unzip -q NFLChase-v1.13.0-Visual-Foundation.zip -d project
 
-      - name: Locate Android project
-        run: |
-          PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
+          PROJECT_DIR=$(dirname "$(find project \
+            -name settings.gradle.kts -print -quit)")
+
           test -f "$PROJECT_DIR/settings.gradle.kts"
+
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Verify ESPN feed
+      - name: Check project integrity
+        run: |
+          python3 "$PROJECT_DIR/tools/check_project_integrity.py"
+
+      - name: Check ESPN data feeds
         continue-on-error: true
         run: |
           python3 "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
@@ -56,9 +90,9 @@ jobs:
       - name: Run Android unit tests
         run: |
           cd "$PROJECT_DIR"
-          gradle testDebugUnitTest --no-daemon --stacktrace
+          gradle clean testDebugUnitTest --no-daemon --stacktrace
 
-      - name: Compile Android APK
+      - name: Build Android APK
         run: |
           cd "$PROJECT_DIR"
           gradle assembleDebug --no-daemon --stacktrace
@@ -66,8 +100,12 @@ jobs:
       - name: Prepare APK
         run: |
           mkdir -p release
-          APK=$(find "$PROJECT_DIR" -name app-debug.apk -print -quit)
+
+          APK=$(find "$PROJECT_DIR" \
+            -name app-debug.apk -print -quit)
+
           test -n "$APK"
+
           cp "$APK" release/TD-Chase-v1.13.0.apk
 
       - name: Upload APK
