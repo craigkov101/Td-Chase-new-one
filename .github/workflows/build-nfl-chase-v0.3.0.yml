@@ -1,5 +1,5 @@
 
-name: Build TD Chase v1.15.2
+name: Build TD Chase v1.15.3
 
 on:
   workflow_dispatch:
@@ -37,7 +37,7 @@ jobs:
 
           if [ ! -d "$SDK_ROOT/platforms/android-35" ] || [ ! -d "$SDK_ROOT/build-tools/35.0.0" ]; then
             SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager -print -quit 2>/dev/null || true)
-            test -n "$SDKMANAGER" || { echo 'Android SDK manager missing from cmdline-tools'; exit 1; }
+            test -n "$SDKMANAGER" || { echo 'Android SDK manager missing'; exit 1; }
             "$SDKMANAGER" --sdk_root="$SDK_ROOT" --install 'platforms;android-35' 'build-tools;35.0.0'
           fi
 
@@ -47,10 +47,10 @@ jobs:
       - name: Unpack TD Chase source
         shell: bash
         run: |
-          test -f NFLChase-v1.15.2-OnDemand-Scripts-Fix.zip
-          unzip -tq NFLChase-v1.15.2-OnDemand-Scripts-Fix.zip
+          test -f NFLChase-v1.15.3-Android-Back-Navigation.zip
+          unzip -tq NFLChase-v1.15.3-Android-Back-Navigation.zip
           mkdir -p project
-          unzip -q NFLChase-v1.15.2-OnDemand-Scripts-Fix.zip -d project
+          unzip -q NFLChase-v1.15.3-Android-Back-Navigation.zip -d project
 
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           test -f "$PROJECT_DIR/settings.gradle.kts"
@@ -80,11 +80,11 @@ jobs:
           mkdir -p release
           APK=$(find "$PROJECT_DIR" -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/TD-Chase-v1.15.2.apk
+          cp "$APK" release/TD-Chase-v1.15.3.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.15.2
-          path: release/TD-Chase-v1.15.2.apk
+          name: TD-Chase-v1.15.3
+          path: release/TD-Chase-v1.15.3.apk
           if-no-files-found: error
