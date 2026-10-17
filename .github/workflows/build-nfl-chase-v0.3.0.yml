@@ -1,5 +1,5 @@
 
-name: Build TD Chase v1.15.0
+name: Build TD Chase v1.15.1
 
 on:
   workflow_dispatch:
@@ -11,6 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,21 +34,21 @@ jobs:
           echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
           test -d "$SDK_ROOT" || { echo 'Android SDK folder missing'; exit 1; }
+
           if [ ! -d "$SDK_ROOT/platforms/android-35" ] || [ ! -d "$SDK_ROOT/build-tools/35.0.0" ]; then
             SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager -print -quit 2>/dev/null || true)
-            test -n "$SDKMANAGER" || { echo 'Android SDK manager missing from cmdline-tools'; exit 1; }
+            test -n "$SDKMANAGER" || { echo 'Android SDK manager missing'; exit 1; }
             "$SDKMANAGER" --sdk_root="$SDK_ROOT" --install 'platforms;android-35' 'build-tools;35.0.0'
           fi
-          test -d "$SDK_ROOT/platforms/android-35"
-          test -d "$SDK_ROOT/build-tools/35.0.0"
 
       - name: Unpack TD Chase source
         shell: bash
         run: |
-          test -f NFLChase-v1.15.0-Sunday-Usage-Coverage.zip
-          unzip -tq NFLChase-v1.15.0-Sunday-Usage-Coverage.zip
+          test -f NFLChase-v1.15.1-Scripts-Stability-Fix.zip
+          unzip -tq NFLChase-v1.15.1-Scripts-Stability-Fix.zip
           mkdir -p project
-          unzip -q NFLChase-v1.15.0-Sunday-Usage-Coverage.zip -d project
+          unzip -q NFLChase-v1.15.1-Scripts-Stability-Fix.zip -d project
+
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           test -f "$PROJECT_DIR/settings.gradle.kts"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
@@ -55,11 +56,11 @@ jobs:
       - name: Release integrity checks
         run: python3 "$PROJECT_DIR/tools/check_project_integrity.py"
 
-      - name: Verify external ESPN feed (diagnostic only)
+      - name: Verify ESPN feed
         continue-on-error: true
         run: python3 "$PROJECT_DIR/tools/verify_live_scoring_feed.py"
 
-      - name: Run all Android unit tests
+      - name: Run Android unit tests
         shell: bash
         run: |
           cd "$PROJECT_DIR"
@@ -76,11 +77,11 @@ jobs:
           mkdir -p release
           APK=$(find "$PROJECT_DIR" -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/TD-Chase-v1.15.0.apk
+          cp "$APK" release/TD-Chase-v1.15.1.apk
 
-      - name: Upload debug APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.15.0
-          path: release/TD-Chase-v1.15.0.apk
+          name: TD-Chase-v1.15.1
+          path: release/TD-Chase-v1.15.1.apk
           if-no-files-found: error
