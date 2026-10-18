@@ -1,5 +1,5 @@
 
-name: Build TD Chase v1.15.3
+name: Build TD Chase v1.15.4
 
 on:
   workflow_dispatch:
@@ -47,10 +47,10 @@ jobs:
       - name: Unpack TD Chase source
         shell: bash
         run: |
-          test -f NFLChase-v1.15.3-Android-Back-Navigation.zip
-          unzip -tq NFLChase-v1.15.3-Android-Back-Navigation.zip
+          test -f NFLChase-v1.15.4-Data-Confidence-Cleanup.zip
+          unzip -tq NFLChase-v1.15.4-Data-Confidence-Cleanup.zip
           mkdir -p project
-          unzip -q NFLChase-v1.15.3-Android-Back-Navigation.zip -d project
+          unzip -q NFLChase-v1.15.4-Data-Confidence-Cleanup.zip -d project
 
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           test -f "$PROJECT_DIR/settings.gradle.kts"
@@ -80,11 +80,11 @@ jobs:
           mkdir -p release
           APK=$(find "$PROJECT_DIR" -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/TD-Chase-v1.15.3.apk
+          cp "$APK" release/TD-Chase-v1.15.4.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.15.3
-          path: release/TD-Chase-v1.15.3.apk
+          name: TD-Chase-v1.15.4
+          path: release/TD-Chase-v1.15.4.apk
           if-no-files-found: error
