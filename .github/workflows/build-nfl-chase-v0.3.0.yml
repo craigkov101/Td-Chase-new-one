@@ -1,5 +1,5 @@
 
-name: Build TD Chase v1.15.7
+name: Build TD Chase v1.15.8
 
 on:
   workflow_dispatch:
@@ -37,7 +37,7 @@ jobs:
 
           if [ ! -d "$SDK_ROOT/platforms/android-35" ] || [ ! -d "$SDK_ROOT/build-tools/35.0.0" ]; then
             SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager -print -quit 2>/dev/null || true)
-            test -n "$SDKMANAGER" || { echo 'Android SDK manager missing from cmdline-tools'; exit 1; }
+            test -n "$SDKMANAGER" || { echo 'Android SDK manager missing'; exit 1; }
             "$SDKMANAGER" --sdk_root="$SDK_ROOT" --install 'platforms;android-35' 'build-tools;35.0.0'
           fi
 
@@ -47,10 +47,10 @@ jobs:
       - name: Unpack TD Chase source
         shell: bash
         run: |
-          test -f NFLChase-v1.15.7-Week7-Data-Recovery.zip
-          unzip -tq NFLChase-v1.15.7-Week7-Data-Recovery.zip
+          test -f NFLChase-v1.15.8-Score-Recalibration.zip
+          unzip -tq NFLChase-v1.15.8-Score-Recalibration.zip
           mkdir -p project
-          unzip -q NFLChase-v1.15.7-Week7-Data-Recovery.zip -d project
+          unzip -q NFLChase-v1.15.8-Score-Recalibration.zip -d project
 
           PROJECT_DIR=$(dirname "$(find project -name settings.gradle.kts -print -quit)")
           test -f "$PROJECT_DIR/settings.gradle.kts"
@@ -59,7 +59,7 @@ jobs:
       - name: Release integrity checks
         run: python3 "$PROJECT_DIR/tools/check_project_integrity.py"
 
-      - name: Verify tonight's Patriots and Bears player feeds
+      - name: Verify Patriots and Bears player feeds
         continue-on-error: true
         shell: bash
         run: |
@@ -71,7 +71,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.15.7-Live-Data-Diagnostics
+          name: TD-Chase-v1.15.8-Live-Data-Diagnostics
           path: release/tdchase-week7-feed-diagnostic.txt
           if-no-files-found: warn
 
@@ -85,7 +85,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.15.7-Unit-Test-Results
+          name: TD-Chase-v1.15.8-Unit-Test-Results
           path: |
             project/**/app/build/test-results/testDebugUnitTest/*.xml
             project/**/app/build/reports/tests/testDebugUnitTest/**
@@ -102,11 +102,11 @@ jobs:
           mkdir -p release
           APK=$(find "$PROJECT_DIR" -name app-debug.apk -print -quit)
           test -n "$APK"
-          cp "$APK" release/TD-Chase-v1.15.7.apk
+          cp "$APK" release/TD-Chase-v1.15.8.apk
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: TD-Chase-v1.15.7
-          path: release/TD-Chase-v1.15.7.apk
+          name: TD-Chase-v1.15.8
+          path: release/TD-Chase-v1.15.8.apk
           if-no-files-found: error
